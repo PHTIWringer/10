@@ -32,23 +32,24 @@ class StreamingService:
     def __init__(self, _name):
         '''Initialize the StreamingService object'''
         self._name = _name
-        self._catelog = []
+        self._catalog = {}
     
     def get_name(self):
         '''Get the name of the streaming service'''
         return self._name
 
-    def get_catelog(self):
-        '''Get the catelog of movies offered on the streaming service'''
-        return self._catelog
+    def get_catalog(self):
+        '''Get the catalog of movies offered on the streaming service'''
+        return self._catalog
 
     def add_movie(self, movie):
-        '''Adds a movie the streaming service catelog'''
-        self._catelog.append(movie)
+        '''Adds a movie to the streaming service catalog'''
+        self._catalog[movie.get_title()] = movie
     
     def delete_movie(self, _title):
-        '''Deletes a movie from the streaming service catelog by title'''
-        self._catelog = [movie for movie in self._catelog if movie.get_title() != _title]
+        '''Deletes a movie from the streaming service catalog by title'''
+        if _title in self._catalog:
+            del self._catalog[_title]
 
 class StreamingGuide:
     def __init__(self):
@@ -64,13 +65,26 @@ class StreamingGuide:
         self._streaming_services = [_service for _service in self._streaming_services if _service.get_name() != _name]
 
     def where_to_watch(self, _title):
-        '''Find what streaming service have a specific movie'''
+        '''Find what streaming service has a specific movie'''
         services_with_movie = []
         for _service in self._streaming_services:
-            for _movie in _service.get_catelog():
-                if _movie.get_title() == _title:
-                    services_with_movie.append(_service.get_name())
-        return services_with_movie
+            if _title in _service.get_catalog():
+                services_with_movie.append(_service.get_name())
+        
+        if not services_with_movie:
+            return None
+
+        movie = None
+        for _service in self._streaming_services:
+            if _title in _service.get_catalog():
+                movie = _service.get_catalog()[_title]
+                break
+        
+        if movie:
+            movie_info = f"{movie.get_title()} ({movie.get_year()})"
+            return [movie_info] + services_with_movie
+        else:
+            return None
 
 # movie_1 = Movie('The Seventh Seal', 'comedy', 'Ingmar Bergman', 1957)
 # movie_2 = Movie('Home Alone', 'tragedy', 'Chris Columbus', 1990)
@@ -82,7 +96,7 @@ class StreamingGuide:
 
 # stream_serv_2 = StreamingService('Hula')
 # stream_serv_2.add_movie(movie_1)
-# s# tream_serv_2.add_movie(movie_4)
+# stream_serv_2.add_movie(movie_4)
 # stream_serv_2.delete_movie('The Seventh Seal')
 # stream_serv_2.add_movie(movie_2)
 
